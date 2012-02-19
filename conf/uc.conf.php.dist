@@ -4,7 +4,7 @@ define('UC_CONNECT', 'mysql');
 define('UC_DBHOST', 'localhost');
 define('UC_DBUSER', 'root');
 define('UC_DBPW', '');
-define('UC_DBNAME', '');
+define('UC_DBNAME', 'x1');
 define('UC_DBCHARSET', 'gbk');
 define('UC_DBTABLEPRE', '');
 define('UC_DBCONNECT', '0');
