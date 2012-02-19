@@ -9,4 +9,4 @@ DokuWiki Ucenter Authentication Method
  Author
 --------
  
- * éÙ×Ó(dorange)<daxingplay@gmail.com>
+ * æ©˜å­(dorange)<daxingplay@gmail.com>
