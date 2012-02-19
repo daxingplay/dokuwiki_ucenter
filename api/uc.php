@@ -2,6 +2,7 @@
 /**
  * uc api for dokuwiki
  * @author dorange<daxingplay@gmail.com>
+ * @link <http://www.techcheng.com/website/dokuwiki/release-ucenter-authentication-for-dokuwiki.html>
  */
 
 error_reporting(0);

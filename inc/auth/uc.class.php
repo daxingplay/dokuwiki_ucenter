@@ -5,6 +5,7 @@
  * @license  GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author   橘子<daxingplay@gmail.com>
  * @version  1.0 beta
+ * @link     <http://www.techcheng.com/website/dokuwiki/release-ucenter-authentication-for-dokuwiki.html>
  */
 
 define('DOKU_AUTH', dirname(__FILE__));
