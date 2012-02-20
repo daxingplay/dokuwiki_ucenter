@@ -46,3 +46,4 @@ If you have any questions, please commit an issue.
 -----------
 
  - Add User Group
+ - Add multilanguage support
