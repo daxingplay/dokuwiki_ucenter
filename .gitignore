@@ -1,2 +1,5 @@
-.settings
+.settings/
 .project
+.externalToolBuilders/
+build/
+*.iml

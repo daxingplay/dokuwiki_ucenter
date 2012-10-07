@@ -4,7 +4,7 @@
  * 
  * @license  GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author   橘子<daxingplay@gmail.com>
- * @version  1.0 beta
+ * @version  2.0 beta
  * @link     <http://www.techcheng.com/website/dokuwiki/release-ucenter-authentication-for-dokuwiki.html>
  */
 
@@ -16,6 +16,7 @@ class auth_uc extends auth_basic {
     
     var $cnf;
     var $users = NULL;
+    var $db = NULL;
 
     function auth_uc(){
         global $conf;
@@ -56,7 +57,15 @@ class auth_uc extends auth_basic {
             $this->success = false;
             return;
         }
-        
+
+        // check user group setting
+        switch($this->cnf['group_type']){
+            case 'discuz':
+                $db_conf = $this->_get_dz_config();
+                $this->_init_db($db_conf);
+                break;
+        }
+
         /*
         $cando = array (
             'addUser'     => false, // can Users be created?
@@ -79,7 +88,8 @@ class auth_uc extends auth_basic {
         $this->cando['modPass'] = false;
         $this->cando['modName'] = true;
         $this->cando['modMail'] = true;
-        $this->cando['modGroups'] = true;
+        // if you use discuz type to get user group, then you must change user group in discuz.
+        $this->cando['modGroups'] = $this->cnf['group_type'] == 'discuz' ? false : true;
         $this->cando['getUsers'] = true;
         $this->cando['getUserCount'] = false;
         $this->cando['getGroups'] = true;
@@ -89,22 +99,9 @@ class auth_uc extends auth_basic {
     }
 
     function logOff(){
-        // if(isset($_SESSION[DOKU_COOKIE]['auth']['uid'])){
-            // unset($_SESSION[DOKU_COOKIE]['auth']['uid']);
-        // }
-        // if(isset($_SESSION[DOKU_COOKIE]['auth']['buid'])){
-            // unset($_SESSION[DOKU_COOKIE]['auth']['buid']);
-        // }
-        // if(isset($_SESSION[DOKU_COOKIE]['auth']['time'])){
-            // unset($_SESSION[DOKU_COOKIE]['auth']['time']);
-        // }
-        // @session_start();
-        // session_destroy();
         $this->_uc_setcookie($this->cnf['cookie'], '', -1);
-        // ob_end_clean();
         $synlogout = uc_user_synlogout();
         msg($synlogout, 0);
-        // echo $synlogout;
     }
 
     /**
@@ -138,6 +135,7 @@ class auth_uc extends auth_basic {
      *   grps  array   list of groups the user is in
      *
      * @param $user   user's nick to get data for
+     * @return $user_info user info
      *
      * @author  Andreas Gohr <andi@splitbrain.org>
      * @author  Matthias Grimm <matthiasgrimm@users.sourceforge.net>
@@ -150,7 +148,7 @@ class auth_uc extends auth_basic {
             $user_info = array(
                 'name' => $username,
                 'mail' => $email,
-                'grps' => array('user'),
+                'grps' => $this->_get_user_group($uid, 1),
                 'uid' => $uid
             );
         }
@@ -295,15 +293,15 @@ class auth_uc extends auth_basic {
      */
     function getUserCount($filter=array()){
         $count = 0;
-        $condition = '';
-        if($this->users !== NULL){
-            $count = count($this->users);
-        }else{
+        $uc_filter = array();
+//        if($this->users !== NULL){
+//            $count = count($this->users);
+//        }else{
             if(!empty($filter)){
-                $condition = $this->_construct_filter($filter);
+                $uc_filter = $this->_construct_filter($filter);
             }
-            $count = uc_user_totalnum($condition);
-        }
+            $count = uc_user_count($uc_filter);
+//        }
         return $count;
     }
     
@@ -321,15 +319,15 @@ class auth_uc extends auth_basic {
         $condition = '';
         $return = array();
         if(count($filter)){
-            $condition = $this->_construct_filter($filter);
-            $return = $this->_filter_uc_user_data(uc_get_userlist($first, $limit, $condition));
+            $uc_filter = $this->_construct_filter($filter);
+            $return = $this->_filter_uc_user_data(uc_get_userlist($first, $limit, $uc_filter));
         }else{
             if($this->users === NULL){
                 $this->users = $this->_filter_uc_user_data(uc_get_userlist($first, $limit));
             }
             $return = $this->users;
         }
-        return $return;
+        return $this->_convert_charset_all($return, 0);
     }
     
    /**
@@ -451,105 +449,8 @@ class auth_uc extends auth_basic {
         }
         return $checked;
         
-        /*
-        if($ACT != 'logout'){
-            if(!empty($user)){
-                // uc login
-                $login_uid = $login_username = $login_password = $login_email = '';
-                list($login_uid, $login_username, $login_password, $login_email) = $this->_uc_user_login($user, $pass);
-                setcookie($this->cnf['cookie'], '', -86400);
-                if ($login_uid > 0){
-                    // make logininfo globally available
-                    $_SERVER['REMOTE_USER'] = $login_username;
-                    $_SESSION[DOKU_COOKIE]['auth']['uid'] = $login_uid;
-                    auth_setCookie($login_username,PMA_blowfish_encrypt($login_password, auth_cookiesalt()), $sticky);
-                    // setcookie($this->cnf['cookie'], uc_authcode($login_uid."\t".$this->_convert_charset($login_username), 'ENCODE'));
-                    $this->_uc_setcookie($this->cnf['cookie'], uc_authcode($login_uid."\t".$this->_convert_charset($login_username), 'ENCODE'), $sticky);
-                    // uc sync login
-                    echo uc_user_synlogin($login_uid);
-                    return true;
-                }else{
-                    //invalid credentials - log off
-                    if(!$silent){
-                        $msg = '';
-                        switch($login_uid){
-                            case -1:
-                                $msg = '用户名不存在或者被删除';
-                                break;
-                            case -2:
-                            default:
-                                $msg = $lang['badlogin'];
-                                break;
-                        }
-                        msg($msg, -1);
-                    }
-                    auth_logoff();
-                    return false;
-                }
-            }else{
-                // get session info
-                $session = $_SESSION[DOKU_COOKIE]['auth'];
-                // TODO read ucenter cookie information
-                $uc_cookie = $_COOKIE[$this->cnf['cookie']];
-                $uc_username = '';
-                $uc_uid = 0;
-                $checked = false;
-                if(!empty($uc_cookie)){
-                    list($uc_uid, $uc_username) = explode("\t", uc_authcode($uc_cookie, 'DECODE'));
-                    $uc_username = $this->_convert_charset($uc_username, 0);
-                    if($uc_username && $uc_uid){
-                        if(isset($session) && $session['user'] == $uc_username && $session['buid'] == auth_browseruid()){
-                            $checked = true;
-                        }else{
-                            $uc_info = $this->getUserData($uc_uid, 1);
-                            if($uc_username == $uc_info['name']){
-                                // he has logged in from other uc apps
-                                $checked = true;
-                                $session['info'] = $uc_info;
-                                // set session
-                                $_SESSION[DOKU_COOKIE]['auth']['uid'] = $uc_uid;
-                                $_SESSION[DOKU_COOKIE]['auth']['user'] = $uc_username;
-                                // $_SESSION[DOKU_COOKIE]['auth']['pass'] = '';
-                                $_SESSION[DOKU_COOKIE]['auth']['buid'] = auth_browseruid();
-                                $_SESSION[DOKU_COOKIE]['auth']['info'] = $uc_info;
-                                $_SESSION[DOKU_COOKIE]['auth']['time'] = time();
-                            }
-                        }
-                        if($checked == true){
-                            $_SERVER['REMOTE_USER'] = $uc_username;
-                            $USERINFO = $session['info']; //FIXME move all references to session
-                            return true;
-                        }
-                    }
-                }else{
-                    // read doku cookie information
-                    list($user,$sticky,$pass) = auth_getCookie();
-                    if($user && $pass){
-                        // we got a cookie - see if we can trust it
-                        if(isset($session) &&
-                                $auth->useSessionCache($user) &&
-                                ($session['time'] >= time()-$conf['auth_security_timeout']) &&
-                                ($session['user'] == $user) &&
-                                ($session['pass'] == $pass) &&  //still crypted
-                                ($session['buid'] == auth_browseruid()) ){
-                            // he has session, cookie and browser right - let him in
-                            $_SERVER['REMOTE_USER'] = $user;
-                            $USERINFO = $session['info']; //FIXME move all references to session
-                            return true;
-                        }
-                        // no we don't trust it yet - recheck pass but silent
-                        $pass = PMA_blowfish_decrypt($pass,auth_cookiesalt());
-                        return auth_login($user,$pass,$sticky,true);
-                    }
-                }
-            }
-        }
-        //just to be sure
-        auth_logoff(true);
-        return false;
-        */
     }
-    
+
     /**
      * get user id frome ucenter
      * 
@@ -563,7 +464,63 @@ class auth_uc extends auth_basic {
         }
         return $uid;
     }
-    
+
+    private function _get_dz_config(){
+        $db_conf = array();
+        $dz_root = DOKU_INC.$this->cnf['discuz_root'];
+        if($dz_root){
+            include $dz_root."config/config_global.php";
+            $db_conf = $_config['db']['1'];
+        }
+        return $db_conf;
+    }
+
+    private function _init_db($db_conf) {
+        require_once UC_ROOT.'lib/db.class.php';
+        $this->db = new ucclient_db();
+        $this->db->connect($db_conf['dbhost'], $db_conf['dbuser'], $db_conf['dbpw'], $db_conf['dbname'], $db_conf['dbcharset'], $db_conf['pconnect'], $db_conf['tablepre']);
+        return $this->db;
+    }
+
+    private function _get_user_group($username, $isuid = 0){
+        $user_group = array('user');
+        switch($this->cnf['group_type']){
+            case 'discuz':
+                $group_types = $this->_get_dz_group_types();
+                $sql = 'SELECT `groupid`,`extgroupids` FROM `'.$this->db->tablepre.'common_member` WHERE `'.($isuid ? 'uid' : 'username')."`='$username'";
+                $result = $this->db->fetch_first($sql);
+                if(!empty($result)){
+                    $user_group = array($group_types[$result['groupid']]['grouptitle']);
+                    if(!empty($result['extgroupids'])){
+                        $ext_groups = explode("|ABCD|", str_replace(array("\n\r", "\n", "\r", "\t", " "), '|ABCD|', $result['extgroupids']));
+                        foreach($ext_groups as $ext_group){
+                            $user_group[] = $group_types[$ext_group]['grouptitle'];
+                        }
+                    }
+                    $user_group = $this->_convert_charset_all($user_group, 0);
+                }
+                break;
+            case 'mysql':
+                break;
+            case 'file':
+                break;
+            default:
+                $user_group = array('user');
+                break;
+        }
+        return $user_group;
+    }
+
+    private function _get_dz_group_types(){
+        $sql = 'SELECT * FROM `'.$this->db->tablepre.'common_usergroup`';
+        $query = $this->db->query($sql);
+        $group_types = array();
+        while($result = $this->db->fetch_array($query)){
+            $group_types[$result['groupid']] = $result;
+        }
+        return $group_types;
+    }
+
     private function _filter_uc_user_data($user_data){
         $return = array();
         if(is_array($user_data)){
@@ -581,11 +538,11 @@ class auth_uc extends auth_basic {
     /**
      * convert doku filter to sql condition slot
      * @param  array $filter   the dokuwiki's filter
-     * @return the sql statement
+     * @return array the filter array for uc sql statement
      */
     private function _construct_filter($filter){
-        $sql = 'WHERE 1';
         $item_name = '';
+        $uc_filter = array();
         foreach($filter as $item => $info){
             switch($item){
                 case 'user':
@@ -598,16 +555,17 @@ class auth_uc extends auth_basic {
                     break;
             }
             if($item_name){
-                $sql .= " AND `$item_name` LIKE '%$info%'";
+                $uc_filter[$item_name] = $info;
             }
         }
-        return $sql;
+        return $uc_filter;
     }
-    
+
     /**
      * convert charset
      * @param string $str  the string that to be converted.
      * @param bool   $out  1: doku convert to other char, 0: other char convert to doku
+     * @return string converted string.
      */
     private function _convert_charset($str, $out = 1){
         if($this->cnf['charset'] != 'utf-8'){
@@ -615,7 +573,20 @@ class auth_uc extends auth_basic {
         }
         return $str;
     }
-    
+
+    private function _convert_charset_all($arr, $out = 1){
+        if($this->cnf['charset'] != 'utf-8'){
+            if(is_array($arr)){
+                foreach($arr as $k=>$v){
+                    $arr[$k] = $this->_convert_charset_all($v, $out);
+                }
+            }else{
+                $arr = $this->_convert_charset($arr, $out);
+            }
+        }
+        return $arr;
+    }
+
     private function _uc_user_login($username, $password){
         $return = uc_user_login($this->_convert_charset($username), $password);
         return array($return[0], $this->_convert_charset($return[1], 0), $return[2], $return[3], $return[4]);
@@ -678,6 +649,7 @@ class auth_uc extends auth_basic {
             return array(
                 'uid' => $status['uid'],
                 'username' => $status['username'],
+                'grps' => $this->_get_user_group($status['uid'], 1),
                 'password' => $status['password'],
                 'email' => $status['email'],
                 'regip' => $status['regip'],

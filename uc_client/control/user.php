@@ -164,6 +164,19 @@ class usercontrol extends base {
 		}
 	}
 
+    function onget_user_list(){
+        $this->init_input();
+        $first = $this->input('first');
+        $limit = $this->input('limit');
+        $filter = $this->input('filter');
+        return $_ENV['user']->get_user_list($first, $limit, $filter);
+    }
+
+    function onuser_count(){
+        $this->init_input();
+        $filter = $this->input('filter');
+        return $_ENV['user']->user_count($filter);
+    }
 
 	function ongetprotected() {
 		$protectedmembers = $this->db->fetch_all("SELECT uid,username FROM ".UC_DBTABLEPRE."protectedmembers GROUP BY username");

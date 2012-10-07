@@ -38,6 +38,19 @@ class usermodel {
 		return $arr;
 	}
 
+    function get_user_list($first = 0, $limit = 10, $filter = array()){
+        $condition = $this->_condition($filter);
+        $arr = $this->db->fetch_all('SELECT * FROM '.UC_DBTABLEPRE."members $condition LIMIT $first, $limit");
+        return $arr;
+    }
+
+    function user_count($filter = array()){
+        $condition = $this->_condition($filter);
+        $query = $this->db->query('SELECT * FROM '.UC_DBTABLEPRE."members $condition");
+        $arr = $this->db->num_rows($query);
+        return $arr;
+    }
+
 	function check_username($username) {
 		$guestexp = '\xA1\xA1|\xAC\xA3|^Guest|^\xD3\xCE\xBF\xCD|\xB9\x43\xAB\xC8';
 		$len = $this->dstrlen($username);
@@ -227,6 +240,17 @@ class usermodel {
 	function quescrypt($questionid, $answer) {
 		return $questionid > 0 && $answer != '' ? substr(md5($answer.md5($questionid)), 16, 8) : '';
 	}
+
+    private function _condition($filter){
+        $condition = '';
+        if(!empty($filter)){
+            $condition = ' WHERE 1';
+            foreach($filter as $k => $v){
+                $condition .= " AND `$k` LIKE '%$v%'";
+            }
+        }
+        return $condition;
+    }
 
 }
 

@@ -28,4 +28,9 @@ $conf['auth']['uc']['cookiepath'] = '/';
 $conf['auth']['uc']['charset'] = UC_CHARSET;
 // do you need synlogin/synlogoff ? if so, set it to true.
 $conf['auth']['uc']['sync'] = true;
+
+// set group type. There are three types: discuz, file, mysql. Default to discuz. In 2.0 Beta, only discuz type is supported.
+$conf['auth']['uc']['group_type'] = 'discuz';
+// config the discuz root directory. Relative to Dokuwiki root dir.
+$conf['auth']['uc']['discuz_root'] = '../';
 ?>

@@ -578,4 +578,13 @@ function uc_check_version() {
 	return is_array($data) ? $data : $return;
 }
 
+function uc_get_userlist($first = 0, $limit = 10, $filter = array()) {
+    $return = call_user_func(UC_API_FUNC, 'user', 'get_user_list', array('first'=>$first, 'limit'=>$limit, 'filter' => $filter));
+    return UC_CONNECT == 'mysql' ? $return : uc_unserialize($return);
+}
+
+function uc_user_count($filter){
+    $return = call_user_func(UC_API_FUNC, 'user', 'user_count', array('filter' => $filter));
+    return UC_CONNECT == 'mysql' ? $return : uc_unserialize($return);
+}
 ?>
