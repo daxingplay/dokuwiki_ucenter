@@ -434,15 +434,11 @@ class auth_uc extends auth_basic {
         if($checked == true){
             $_SERVER['REMOTE_USER'] = $username;
             $USERINFO = $user_info; //FIXME move all references to session
-            // $session['info'] = $user_info;
-            // set session
-            // $_SESSION[DOKU_COOKIE]['auth']['uid'] = $uid;
             $_SESSION[DOKU_COOKIE]['auth']['user'] = $username;
             $_SESSION[DOKU_COOKIE]['auth']['pass'] = $password;
             $_SESSION[DOKU_COOKIE]['auth']['buid'] = auth_browseruid();
             $_SESSION[DOKU_COOKIE]['auth']['info'] = $user_info;
             $_SESSION[DOKU_COOKIE]['auth']['time'] = time();
-            // return true;
         }else{
             // auth_logoff();
             // return false;
