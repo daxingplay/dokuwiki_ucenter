@@ -1,7 +1,7 @@
 <?php
 /**
  * @fileoverview
- * @author ×ÏÓ¢£¨daxingplay£©<daxingplay@gmail.com>
+ * @author daxingplay<daxingplay@gmail.com>
  * @time: 12-10-7 23:49
  * @description
  */

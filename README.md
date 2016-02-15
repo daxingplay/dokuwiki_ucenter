@@ -1,24 +1,19 @@
-DokuWiki Ucenter Authentication Method
-======================================
-
- * Source: <http://github.com/daxingplay/dokuwiki_ucenter>
- * Docs: 
- * Changelog: <https://github.com/daxingplay/dokuwiki_ucenter/blob/master/CHANGELOG.md>
- * License: 
+# DokuWiki Ucenter Authentication Method
  
- Author
---------
- 
- * 橘子(dorange)<daxingplay@gmail.com>
- 
- Introduction
---------------
+## Author
 
- This is an alternative authentication method for DokuWiki(http://www.dokuwiki.org) using Ucenter(http://www.discuz.net).
- For more information, please visit my blog: http://www.techcheng.com/website/dokuwiki/release-ucenter-authentication-for-dokuwiki.html
+ * 橘子(daxingplay)<daxingplay@gmail.com>
+ 
+## Introduction
 
- HowToUse
-----------
+This is an alternative authentication method for [DokuWiki](http://www.dokuwiki.org) using [Ucenter](http://www.discuz.net).
+For more information, please visit [my blog post](https://daxingplay.me/website/dokuwiki/release-ucenter-authentication-for-dokuwiki.html).
+
+## Suitable for
+
+This auth backend is only suitable for dokuwiki version before **2012-10-13 “Adora Belle”**(included) and older
+
+## HowToUse
 
 For English Users:
 
@@ -42,8 +37,11 @@ For Chinese Users:
  
 If you have any questions, please commit an issue.
 
- ToDo List
------------
+## ToDo List
 
  - Add User Group
  - Add multilanguage support
+ 
+## license
+
+MIT
