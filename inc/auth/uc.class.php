@@ -209,7 +209,7 @@ class auth_uc extends auth_basic {
      * The dataset update will be rejected if the user name should be changed
      * to an already existing one.
      *
-     * The password must be provides unencrypted. Pasword cryption is done
+     * The password must be provides unencrypted. Password encryption is done
      * automatically by ucenter.
      *
      * If one or more groups could't be updated, an error would be set. In
@@ -221,7 +221,7 @@ class auth_uc extends auth_basic {
      * should be modified). In this case we asure that we don't touch groups
      * even $changes['grps'] is set by mistake.
      *
-     * @param   $user     nick of the user to be changed
+     * @param   $user     string nick of the user to be changed
      * @param   $changes  array of field/value pairs to be changed (password
      *                    will be clear text)
      * @return  bool      true on success, false on error

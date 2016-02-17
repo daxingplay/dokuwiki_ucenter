@@ -9,9 +9,13 @@
 This is an alternative authentication method for [DokuWiki](http://www.dokuwiki.org) using [Ucenter](http://www.discuz.net).
 For more information, please visit [my blog post](https://daxingplay.me/website/dokuwiki/release-ucenter-authentication-for-dokuwiki.html).
 
-## Suitable for
+## Compatibility
 
 This auth backend is only suitable for dokuwiki version before **2012-10-13 “Adora Belle”**(included) and older
+
+For newer versions of DokuWiki, please refer to [authucenter plugin](https://github.com/daxingplay/dokuwiki-plugin-authucenter)
+
+**注意：**这个库仅适用于2012-10-13以及之前版本的DokuWiki，对于新版本的DokuWiki，请查看[authucenter插件](https://github.com/daxingplay/dokuwiki-plugin-authucenter)
 
 ## HowToUse
 
